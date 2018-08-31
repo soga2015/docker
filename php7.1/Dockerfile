@@ -4,7 +4,7 @@ MAINTAINER biaolian@xmisp.com
 
 #RUN curl -fSL http://mirrors.163.com/.help/CentOS6-Base-163.repo -o /etc/yum.repos.d/CentOS6-Base-163.repo
 #RUN yum makecache
-RUN yum -y install git vim wget curl-devel curl tar gcc gcc-c++ gcc-g77 make libtool autoconf  automake  libxml2 libxml2-devel libtool-ltdl-devel libtool-ltdl libmcrypt libmcrypt-devel libpng libpng-devel libjpeg-devel openssl openssl-devel gd-devel gd cmake  bzip2 bzip2-devel readline-devel
+RUN yum -y install git vim wget curl-devel curl tar gcc gcc-c++ g++ gcc-g77 make libtool autoconf  automake  libxml2 libxml2-devel libtool-ltdl-devel libtool-ltdl libmcrypt libmcrypt-devel libpng libpng-devel libjpeg-devel openssl openssl-devel gd-devel gd cmake  bzip2 bzip2-devel readline-devel
 
 #RUN yum -y install pcre pcre-*
 RUN groupadd -g 1051 www && useradd -u 1051 -g www -s /sbin/nologin www
