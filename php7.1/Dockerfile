@@ -187,6 +187,7 @@ RUN set -xe \
 	&& ./configure --prefix=/xmisp/server/zookeeper
 
 RUN set -xe \
+	&& cd /xmisp/server/zookeeper-3.4.8/src/c \
 	&& make \
     && make install
 
@@ -196,6 +197,7 @@ RUN set -xe \
 	&& ./configure --with-php-config=/xmisp/server/php/php-7.1.8/bin/php-config -with-libzookeeper-dir=/xmisp/server/zookeeper/
 	
 RUN set -xe \
+	&& cd /usr/src/zookeeper-0.6.2 \
 	&& make \
     && make install
 	
