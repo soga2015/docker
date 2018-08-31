@@ -1,0 +1,176 @@
+
+# www.xmisp.com
+#
+# dockerfile
+#
+
+FROM centos:latest
+MAINTAINER biaolian@xmisp.com
+
+
+#RUN curl -fSL http://mirrors.163.com/.help/CentOS6-Base-163.repo -o /etc/yum.repos.d/CentOS6-Base-163.repo
+#RUN yum makecache
+RUN yum -y install wget curl-devel curl tar gcc gcc-c++ gcc-g77 make libtool autoconf  automake  libxml2 libxml2-devel libtool-ltdl-devel libtool-ltdl libmcrypt libmcrypt-devel libpng libpng-devel libjpeg-devel openssl openssl-devel gd-devel gd cmake  bzip2 bzip2-devel readline-devel
+
+#RUN yum -y install pcre pcre-*
+RUN groupadd -g 1051 www && useradd -u 1051 -g www -s /sbin/nologin www
+
+#nginx
+#
+#
+#
+RUN set -xe \
+    && cd /usr/src \
+    && curl -fSL http://oss.aliyuncs.com/aliyunecs/onekey/freetype-2.1.10.tar.gz -o freetype-2.1.10.tar.gz \
+    && tar -zxvf freetype-2.1.10.tar.gz \
+    && curl -fSL http://oss.aliyuncs.com/aliyunecs/onekey/libpng-1.2.50.tar.gz -o libpng-1.2.50.tar.gz \
+    && tar -zxvf libpng-1.2.50.tar.gz \
+    && curl -fSL http://oss.aliyuncs.com/aliyunecs/onekey/libevent-1.4.14b.tar.gz -o libevent-1.4.14b.tar.gz \
+    && tar -zxvf libevent-1.4.14b.tar.gz \
+    && curl -fSL http://oss.aliyuncs.com/aliyunecs/onekey/libmcrypt-2.5.8.tar.gz -o libmcrypt-2.5.8.tar.gz \
+    && tar -zxvf libmcrypt-2.5.8.tar.gz \
+    && curl -fSL http://oss.aliyuncs.com/aliyunecs/onekey/jpegsrc.v6b.tar.gz -o jpegsrc.v6b.tar.gz \
+    && tar -zxvf jpegsrc.v6b.tar.gz \
+    && curl -fSL http://192.168.61.77/PACKAGE/php-5.6.31.tar.gz  -o php-5.6.31.tar.gz \
+    && tar -zxvf php-5.6.31.tar.gz \
+    && exit
+
+
+
+RUN set -xe \
+    && cd /usr/src/freetype-2.1.10 \
+    && ./configure --prefix=/usr/local/freetype.2.1.10 && make && make install \
+    && exit
+
+
+RUN set -xe \
+    && cd /usr/src/libpng-1.2.50 \
+    && ./configure --prefix=/usr/local/libpng.1.2.50 && make && make install \
+    && exit
+
+
+RUN set -xe \
+    && cd /usr/src/libevent-1.4.14b \
+    && ./configure && make && make install \
+    && exit
+
+
+RUN set -xe \
+    && cd /usr/src/libmcrypt-2.5.8 \
+    && ./configure --disable-posix-threads && make && make install \
+    && /sbin/ldconfig \
+    && cd libltdl/ \
+    && ./configure --enable-ltdl-install && make && make install \
+    && exit
+
+RUN set -xe \
+    && cd /usr/src/jpeg-6b \
+    && cp -f /usr/share/libtool/config/config.guess . \
+    && cp -f /usr/share/libtool/config/config.sub . \
+    && mkdir -p /usr/local/jpeg.6/include \
+    && mkdir /usr/local/jpeg.6/lib \
+    && mkdir /usr/local/jpeg.6/bin \
+    && mkdir -p /usr/local/jpeg.6/man/man1 \
+    && ./configure --prefix=/usr/local/jpeg.6 --enable-shared --enable-static && make && make install-lib && make install \
+    && exit
+
+
+
+
+###php5.5
+RUN set -xe \
+    && echo "/usr/local/lib" >>/etc/ld.so.conf.d/local.conf \
+    && ldconfig -v \
+    && cd /usr/src/php-5.6.31 \
+    && ./configure --prefix=/xmisp/server/php/php-5.6.31 --enable-opcache --with-config-file-path=/xmisp/server/php/php-5.6.31/etc --with-mysql=mysqlnd --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd --with-fpm-user=www --with-fpm-group=www --with-zlib --with-iconv --with-xmlrpc --with-curl --with-mcrypt --with-freetype-dir=/usr/local/freetype.2.1.10 --with-jpeg-dir=/usr/local/jpeg.6 --with-png-dir=/usr/local/libpng.1.2.50 --with-gettext --with-mhash --with-libxml-dir --with-bz2 --with-readline --with-openssl --disable-maintainer-zts --disable-rpath --disable-ipv6 --disable-debug --enable-fileinfo --enable-pcntl --enable-sockets --enable-wddx --enable-zip --enable-calendar --enable-bcmath --enable-soap --enable-shmop --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-mbstring --enable-fpm --enable-static --enable-pcntl --enable-inline-optimization \
+    && exit
+
+
+RUN set -xe \
+    && cd /usr/src/php-5.6.31 \
+    && make \
+    && make install \
+    && cp php.ini-production /xmisp/server/php/php-5.6.31/etc/php.ini \
+    && exit
+
+
+RUN set -xe \
+    && sed -i 's#; extension_dir = \"\.\/\"#extension_dir = "/xmisp/server/php/php-5.6.31/lib/php/extensions/no-debug-non-zts-20131226/"#' /xmisp/server/php/php-5.6.31/etc/php.ini \
+	&& sed -i 's/post_max_size = 8M/post_max_size = 64M/g' /xmisp/server/php/php-5.6.31/etc/php.ini \
+    && sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 64M/g' /xmisp/server/php/php-5.6.31/etc/php.ini \
+    && sed -i 's/;date.timezone =/date.timezone = PRC/g' /xmisp/server/php/php-5.6.31/etc/php.ini \
+    && sed -i 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=1/g' /xmisp/server/php/php-5.6.31/etc/php.ini \
+    && sed -i 's/max_execution_time = 30/max_execution_time = 300/g' /xmisp/server/php/php-5.6.31/etc/php.ini \
+    && cp /xmisp/server/php/php-5.6.31/etc/php-fpm.conf.default /xmisp/server/php/php-5.6.31/etc/php-fpm.conf \
+    && sed -i 's,user = nobody,user=www,g' /xmisp/server/php/php-5.6.31/etc/php-fpm.conf \
+    && sed -i 's,group = nobody,group=www,g' /xmisp/server/php/php-5.6.31/etc/php-fpm.conf \
+    && sed -i 's,^pm.min_spare_servers = 1,pm.min_spare_servers = 5,g' /xmisp/server/php/php-5.6.31/etc/php-fpm.conf \
+    && sed -i 's,^pm.max_spare_servers = 3,pm.max_spare_servers = 35,g' /xmisp/server/php/php-5.6.31/etc/php-fpm.conf \
+    && sed -i 's,^pm.max_children = 5,pm.max_children = 100,g' /xmisp/server/php/php-5.6.31/etc/php-fpm.conf \
+    && sed -i 's,^pm.start_servers = 2,pm.start_servers = 20,g' /xmisp/server/php/php-5.6.31/etc/php-fpm.conf \
+    && sed -i 's,;pid = run/php-fpm.pid,pid = run/php-fpm.pid,g' /xmisp/server/php/php-5.6.31/etc/php-fpm.conf \
+    && sed -i 's/listen = 127.0.0.1:9000/listen = 0.0.0.0:9000/g' /xmisp/server/php/php-5.6.31/etc/php-fpm.conf \
+    && cd /usr/src/php-5.6.31 \
+    && install -v -m755 sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm
+
+
+
+
+RUN set -xe \
+    && cd /usr/src \
+    && curl -fSL http://192.168.61.77/PACKAGE/mongo-1.6.14.tgz -o mongo-1.6.14.tgz \
+    && tar -zxvf mongo-1.6.14.tgz \
+    && cd /usr/src/mongo-1.6.14 \
+    &&  /xmisp/server/php/php-5.6.31/bin/phpize \
+    && ./configure --with-php-config=/xmisp/server/php/php-5.6.31/bin/php-config \
+    && make && make install \
+    && echo "extension=mongo.so" >> /xmisp/server/php/php-5.6.31/etc/php.ini \
+    && exit
+
+RUN set -xe \
+    && cd /usr/src \
+    && curl -fSL http://oss.aliyuncs.com/aliyunecs/onekey/php_extend/memcache-3.0.6.tgz -o memcache-3.0.6.tgz \
+    && tar -zxvf memcache-3.0.6.tgz \
+    && cd memcache-3.0.6 \
+    &&  /xmisp/server/php/php-5.6.31/bin/phpize \
+    && ./configure --enable-memcache --with-php-config=/xmisp/server/php/php-5.6.31/bin/php-config \
+    && make && make install \
+    && echo "extension=memcache.so" >> /xmisp/server/php/php-5.6.31/etc/php.ini \
+    && exit
+
+
+RUN set -xe \
+    && cd /usr/src/ \
+    && curl -fSL https://github.com/phpredis/phpredis/archive/2.2.4.tar.gz -o 2.2.4.tar.gz \
+    && tar -zxvf 2.2.4.tar.gz \
+    && cd /usr/src/phpredis-2.2.4 \
+    &&  /xmisp/server/php/php-5.6.31/bin/phpize \
+    && ./configure --with-php-config=/xmisp/server/php/php-5.6.31/bin/php-config \
+    && make && make install \
+    && echo "extension=redis.so" >> /xmisp/server/php/php-5.6.31/etc/php.ini \
+    && chown www.www -R /xmisp/server/php \
+    && exit
+
+RUN set -xe \
+    && cd /usr/src/php-5.6.31/ext/gd \
+    && /xmisp/server/php/php-5.6.31/bin/phpize \
+    && ./configure --with-php-config=/xmisp/server/php/php-5.6.31/bin/php-config \
+    && make && make install \
+    && echo "extension=gd.so" >> /xmisp/server/php/php-5.6.31/etc/php.ini \
+    && chown www.www -R /xmisp/server/php \
+    && exit
+
+RUN set -xe \
+    && yum clean packages \
+    && yum clean headers \
+    && yum clean all
+
+
+
+WORKDIR /xmisp/server/php
+EXPOSE 9000
+
+COPY phprun.sh /root/phprun.sh
+RUN chmod +x /root/phprun.sh
+CMD ["bash","/root/phprun.sh"]
+
