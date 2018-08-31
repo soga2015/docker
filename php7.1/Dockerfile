@@ -205,7 +205,7 @@ RUN set -xe \
 RUN set -xe \
 	&& mkdir /home/data \
 	&& mkdir /home/data/zoo \
-	&& cp -f /xmisp/server/zookeeper-3.4.8/conf/zoo_sample.cfg /xmisp/server/zookeeper-3.4.8/conf/zoo.cfg
+	&& cp -f /xmisp/server/zookeeper-3.4.8/conf/zoo_sample.cfg /xmisp/server/zookeeper-3.4.8/conf/zoo.cfg \
 	&& sed -i 's/dataDir=\/tmp\/zookeeper/dataDir=\/home\/data\/zoo/g' /xmisp/server/zookeeper-3.4.8/conf/zoo.cfg
     
 	
