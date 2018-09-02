@@ -213,7 +213,7 @@ RUN set -xe \
 	
 
 ENV PATH /xmisp/server/php/php-7.1.8/sbin:/xmisp/server/php/php-7.1.8/bin:$PATH
-ENV JAVA_HOME /usr/java/jdk1.8.0_161
+ENV JAVA_HOME /xmisp/server/jdk1.8.0_161
 ENV CLASSPATH $JAVA_HOME/lib/
 ENV PATH $PATH:$JAVA_HOME/bin
 
